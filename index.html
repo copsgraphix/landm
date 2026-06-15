@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>L&M — Landscaping & Design</title>
-<link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96.png">
-<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="96x96" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -72,7 +72,7 @@
 
   /* ---- optional background image per cell ----
      To use: add class "has-img" and set --img on the cell, e.g.
-     <a class="cell has-img" style="--img:url('images/personal.jpg')" ...>
+     <a class="cell has-img" style="--img:url('personal.jpg')" ...>
      A dark scrim is applied automatically so the text stays readable. */
   .cell__media{position:absolute;inset:0;z-index:0;pointer-events:none}
   .cell.has-img .cell__media{background:var(--img) center/cover no-repeat;
@@ -136,7 +136,7 @@
 <div class="cursor" id="cursor" aria-hidden="true"></div>
 
 <header class="head">
-  <span class="head__mark"><img src="images/logo.png" alt="L&M Landscaping &amp; Design"></span>
+  <span class="head__mark"><img src="logo.png" alt="L&M Landscaping &amp; Design"></span>
 </header>
 
 <main class="portal" id="portal">
@@ -146,7 +146,7 @@
 
   <nav class="grid" aria-label="Choose a division">
     <!-- PERSONAL -> Yardbook (external) -->
-    <a class="cell has-img" id="cellA" style="--img:url('images/personal.jpg')" href="https://www.yardbook.com" data-cursor>
+    <a class="cell has-img" id="cellA" style="--img:url('personal.jpg')" href="https://www.yardbook.com" data-cursor>
       <span class="cell__media" aria-hidden="true"></span>
       <span class="cell__body">
         <span class="cell__tag"><span class="label">Personal</span></span>
@@ -157,7 +157,7 @@
     </a>
 
     <!-- BUSINESS -> separate page -->
-    <a class="cell has-img" id="cellB" style="--img:url('images/business.jpg')" href="business.html" data-cursor>
+    <a class="cell has-img" id="cellB" style="--img:url('business.jpg')" href="business.html" data-cursor>
       <span class="cell__media" aria-hidden="true"></span>
       <span class="cell__body">
         <span class="cell__tag"><span class="label">Business</span></span>
@@ -232,7 +232,7 @@
 
   if(!reduce){
     var ld=document.createElement('div'); ld.className='loader';
-    ld.innerHTML='<img class="loader__logo" src="images/logo.png" alt="L&amp;M Landscaping &amp; Design"><div class="loader__bar"><span></span></div><div class="loader__meta label mono">Reading the site…</div>';
+    ld.innerHTML='<img class="loader__logo" src="logo.png" alt="L&amp;M Landscaping &amp; Design"><div class="loader__bar"><span></span></div><div class="loader__meta label mono">Reading the site…</div>';
     document.body.appendChild(ld); document.body.style.overflow='hidden';
     requestAnimationFrame(function(){
       var b=ld.querySelector('.loader__bar span');
