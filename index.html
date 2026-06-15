@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>L&M — Landscaping & Design</title>
+<link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E100D;--ink-2:#15170F;--bone:#E7E3D6;--bone-dim:#B9B6AB;
+    --sage:#6E7363;--sage-line:#3A3E33;--moss:#BEE83E;--clay:#E0552B;
+    --edge:rgba(231,227,214,.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--ink);color:var(--bone);font-family:'Archivo',system-ui,sans-serif;
+    line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--moss);color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+
+  .label{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--sage)}
+  .mono{font-family:'Space Mono',monospace}
+  .display{font-family:'Anton',sans-serif;text-transform:uppercase;line-height:.86;letter-spacing:.005em}
+
+  /* cursor */
+  .cursor{position:fixed;top:0;left:0;width:34px;height:34px;pointer-events:none;z-index:9999;
+    mix-blend-mode:difference;transform:translate(-50%,-50%);opacity:0;transition:opacity .3s,width .3s,height .3s}
+  .cursor::before,.cursor::after{content:"";position:absolute;background:var(--bone)}
+  .cursor::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-.5px)}
+  .cursor::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-.5px)}
+  .cursor.is-active{width:56px;height:56px}
+  @media (pointer:fine){body.cursor-on{cursor:none}.cursor{opacity:1}}
+
+  /* loader */
+  .loader{position:fixed;inset:0;z-index:10000;background:var(--ink);display:flex;
+    align-items:center;justify-content:center;flex-direction:column}
+  .loader__mark{font-family:'Anton',sans-serif;font-size:clamp(3rem,11vw,8rem);letter-spacing:.02em}
+  .loader__logo{width:min(290px,62vw);height:auto;display:block}
+  .loader__bar{margin-top:22px;width:min(260px,60vw);height:1px;background:var(--sage-line);position:relative;overflow:hidden}
+  .loader__bar span{position:absolute;inset:0;background:var(--moss);transform-origin:left;transform:scaleX(0)}
+  .loader__meta{margin-top:16px}
+
+  /* header */
+  .head{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;
+    justify-content:space-between;padding:18px clamp(20px,5vw,64px)}
+  .head__mark{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:.04em}
+  .head__mark img{height:30px;width:auto;display:block}
+
+  /* portal */
+  .portal{position:relative;height:100svh;min-height:600px;overflow:hidden}
+  .field{position:absolute;inset:0;width:100%;height:100%}
+  .field svg{width:100%;height:100%;display:block}
+  .contour{fill:none;stroke:var(--sage-line);stroke-width:1;vector-effect:non-scaling-stroke}
+  .contour--index{stroke:var(--sage);stroke-width:1.4}
+  .contour--hot{stroke:var(--moss);stroke-width:1.6;opacity:.85}
+
+  /* two grids */
+  .grid{position:absolute;inset:0;z-index:2;display:grid;grid-template-columns:1fr 1fr}
+  .cell{position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+    padding:clamp(26px,5vw,72px);border-right:1px solid var(--edge);overflow:hidden;
+    transition:background .5s;color:inherit}
+  .cell:last-child{border-right:0}
+  .cell::before{content:"";position:absolute;inset:clamp(16px,2.5vw,28px);z-index:1;
+    border:1px dashed var(--sage-line);pointer-events:none;transition:.5s}
+  .cell:hover,.cell:focus-visible{background:rgba(190,232,74,.045);outline:none}
+  .cell:hover::before,.cell:focus-visible::before{border-color:var(--moss);inset:clamp(12px,2vw,22px)}
+
+  /* ---- optional background image per cell ----
+     To use: add class "has-img" and set --img on the cell, e.g.
+     <a class="cell has-img" style="--img:url('images/personal.jpg')" ...>
+     A dark scrim is applied automatically so the text stays readable. */
+  .cell__media{position:absolute;inset:0;z-index:0;pointer-events:none}
+  .cell.has-img .cell__media{background:var(--img) center/cover no-repeat;
+    transform:scale(1.05);transition:transform 1.1s cubic-bezier(.2,.7,.2,1)}
+  .cell.has-img:hover .cell__media,.cell.has-img:focus-visible .cell__media{transform:scale(1.12)}
+  .cell.has-img .cell__media::after{content:"";position:absolute;inset:0;transition:opacity .6s ease;
+    background:linear-gradient(180deg,rgba(11,13,9,.55) 0%,rgba(11,13,9,.62) 50%,rgba(11,13,9,.86) 100%)}
+  .cell.has-img:hover .cell__media::after,.cell.has-img:focus-visible .cell__media::after{opacity:.6}
+
+  .cell__body{position:relative;z-index:2;max-width:30ch}
+  .cell__tag{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .cell__name{font-family:'Anton',sans-serif;text-transform:uppercase;line-height:.92;
+    font-size:clamp(2rem,4.4vw,4rem);color:var(--bone);transition:color .4s,transform .4s}
+  .cell:hover .cell__name,.cell:focus-visible .cell__name{color:var(--moss);transform:translateX(5px)}
+  .cell__desc{margin-top:14px;color:var(--bone-dim);font-size:clamp(.92rem,1.4vw,1.05rem)}
+  .cell__enter{margin-top:22px;display:inline-flex;align-items:center;gap:.7em;
+    font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;
+    font-size:.78rem;color:var(--moss)}
+  .cell__enter .arr{transition:transform .35s}
+  .cell:hover .cell__enter .arr,.cell:focus-visible .cell__enter .arr{transform:translateX(6px)}
+  .cell__ext{margin-left:.5em;color:var(--sage)}
+
+  /* chrome overlay */
+  .chrome{position:absolute;inset:0;z-index:3;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between}
+  .chrome__top{display:flex;justify-content:space-between;padding:84px clamp(20px,5vw,64px) 0}
+  .chrome__bottom{display:flex;justify-content:space-between;align-items:flex-end;
+    padding:0 clamp(20px,5vw,64px) 32px;gap:20px}
+  .scalebar{display:flex;flex-direction:column;gap:7px}
+  .scalebar__ticks{display:flex;height:9px;width:150px}
+  .scalebar__ticks i{flex:1;border:1px solid var(--sage);border-right:0}
+  .scalebar__ticks i:last-child{border-right:1px solid var(--sage)}
+  .scalebar__ticks i:nth-child(odd){background:var(--sage)}
+  .compass{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .compass__n{font-family:'Anton',sans-serif;font-size:1.1rem}
+  .compass__arrow{width:1px;height:24px;background:var(--bone);position:relative}
+  .compass__arrow::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    border:5px solid transparent;border-bottom-color:var(--moss);border-top:0}
+
+  :focus-visible{outline:2px solid var(--moss);outline-offset:3px}
+
+  @media (max-width:680px){
+    .portal{height:100svh;min-height:540px}
+    .grid{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+    .cell{border-right:0;border-bottom:1px solid var(--edge);justify-content:flex-end;padding:clamp(20px,5vw,40px)}
+    .cell:last-child{border-bottom:0}
+    .cell__name{font-size:clamp(2rem,10vw,3.2rem)}
+    .cell__desc{font-size:.9rem;margin-top:10px}
+    .cell__enter{margin-top:16px}
+    .chrome__top{padding-top:72px}
+    .chrome__top span:last-child{display:none}
+    .chrome__bottom{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .cursor{display:none}body.cursor-on{cursor:auto}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+
+<header class="head">
+  <span class="head__mark"><img src="images/logo.png" alt="L&M Landscaping &amp; Design"></span>
+</header>
+
+<main class="portal" id="portal">
+  <div class="field" aria-hidden="true">
+    <svg id="fieldSvg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice"><g id="contours"></g></svg>
+  </div>
+
+  <nav class="grid" aria-label="Choose a division">
+    <!-- PERSONAL -> Yardbook (external) -->
+    <a class="cell has-img" id="cellA" style="--img:url('images/personal.jpg')" href="https://www.yardbook.com" data-cursor>
+      <span class="cell__media" aria-hidden="true"></span>
+      <span class="cell__body">
+        <span class="cell__tag"><span class="label">Personal</span></span>
+        <span class="cell__name">Home &amp;<br>Gardens</span>
+        <span class="cell__desc">Design, planting and care for private gardens. Book and manage your service online.</span>
+        <span class="cell__enter">Open in Yardbook <span class="arr">→</span><span class="cell__ext mono">↗ ext</span></span>
+      </span>
+    </a>
+
+    <!-- BUSINESS -> separate page -->
+    <a class="cell has-img" id="cellB" style="--img:url('images/business.jpg')" href="business.html" data-cursor>
+      <span class="cell__media" aria-hidden="true"></span>
+      <span class="cell__body">
+        <span class="cell__tag"><span class="label">Business</span></span>
+        <span class="cell__name">Corporate<br>&amp; Grounds</span>
+        <span class="cell__desc">Grounds maintenance and landscape works for offices, developments and public realm.</span>
+        <span class="cell__enter">Enter site <span class="arr">→</span></span>
+      </span>
+    </a>
+  </nav>
+
+  <div class="chrome">
+    <div class="chrome__top">
+      <span class="label">L&amp;M — Landscaping &amp; Design</span>
+      <span class="label mono">Two divisions, one practice</span>
+    </div>
+    <div class="chrome__bottom">
+      <div class="scalebar"><span class="label">Scale · 0 — 50m</span>
+        <span class="scalebar__ticks"><i></i><i></i><i></i><i></i><i></i></span></div>
+      <div class="compass"><span class="compass__n">N</span><span class="compass__arrow"></span></div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var fine=window.matchMedia('(pointer:fine)').matches;
+
+  function pathFrom(pts){
+    var n=pts.length,d="M "+pts[0][0].toFixed(1)+" "+pts[0][1].toFixed(1)+" ";
+    for(var i=0;i<n;i++){
+      var p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+      var c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6;
+      var c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
+      d+="C "+c1x.toFixed(1)+" "+c1y.toFixed(1)+" "+c2x.toFixed(1)+" "+c2y.toFixed(1)+" "+p2[0].toFixed(1)+" "+p2[1].toFixed(1)+" ";
+    }
+    return d+"Z";
+  }
+  function ring(cx,cy,R,phase,amp,segs){
+    var pts=[],i,a,w,rr;
+    for(i=0;i<segs;i++){
+      a=i/segs*Math.PI*2;
+      w=Math.sin(a*2+phase)*amp*.6+Math.sin(a*3+phase*1.7)*amp*.4+Math.sin(a*5+phase*.5)*amp*.22;
+      rr=R+w; pts.push([cx+Math.cos(a)*rr*1.18,cy+Math.sin(a)*rr]);
+    }
+    return pts;
+  }
+  var g=document.getElementById('contours'),paths=[],count=14,step=44,segs=64,r,p,cls;
+  for(r=1;r<=count;r++){
+    p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    cls='contour'; if(r%4===0)cls+=' contour--index'; if(r===8)cls+=' contour--hot';
+    p.setAttribute('class',cls);
+    p.setAttribute('d',pathFrom(ring(500,500,r*step,r*.4,8+r*1.2,segs)));
+    g.appendChild(p); paths.push(p);
+  }
+  if(!reduce){
+    var svg=document.getElementById('fieldSvg'),cx=500,cy=500,tcx=500,tcy=500,t=0;
+    (function draw(){
+      t+=.004; cx+=(tcx-cx)*.06; cy+=(tcy-cy)*.06;
+      for(var i=0;i<paths.length;i++){
+        paths[i].setAttribute('d',pathFrom(ring(cx,cy,(i+1)*step,(i+1)*.4+t,8+(i+1)*1.2,segs)));
+      }
+      requestAnimationFrame(draw);
+    })();
+    document.getElementById('portal').addEventListener('pointermove',function(e){
+      var rect=svg.getBoundingClientRect();
+      tcx=((e.clientX-rect.left)/rect.width)*1000; tcy=((e.clientY-rect.top)/rect.height)*1000;
+    });
+    document.getElementById('portal').addEventListener('pointerleave',function(){tcx=500;tcy=500;});
+  }
+
+  if(!reduce){
+    var ld=document.createElement('div'); ld.className='loader';
+    ld.innerHTML='<img class="loader__logo" src="images/logo.png" alt="L&amp;M Landscaping &amp; Design"><div class="loader__bar"><span></span></div><div class="loader__meta label mono">Reading the site…</div>';
+    document.body.appendChild(ld); document.body.style.overflow='hidden';
+    requestAnimationFrame(function(){
+      var b=ld.querySelector('.loader__bar span');
+      b.style.transition='transform 1s cubic-bezier(.5,.1,.1,1)'; b.style.transform='scaleX(1)';
+    });
+    setTimeout(function(){
+      ld.style.transition='opacity .6s,transform .8s cubic-bezier(.7,0,.2,1)';
+      ld.style.transform='translateY(-101%)'; ld.style.opacity='0'; document.body.style.overflow='';
+      setTimeout(function(){ld.remove();},800);
+    },1400);
+  }
+
+  if(fine && !reduce){
+    document.body.classList.add('cursor-on');
+    var cur=document.getElementById('cursor'),px=innerWidth/2,py=innerHeight/2,mx=px,my=py;
+    addEventListener('pointermove',function(e){mx=e.clientX;my=e.clientY;});
+    (function loop(){px+=(mx-px)*.2;py+=(my-py)*.2;
+      cur.style.transform='translate('+px+'px,'+py+'px) translate(-50%,-50%)';requestAnimationFrame(loop);})();
+    document.querySelectorAll('a,[data-cursor]').forEach(function(el){
+      el.addEventListener('pointerenter',function(){cur.classList.add('is-active');});
+      el.addEventListener('pointerleave',function(){cur.classList.remove('is-active');});
+    });
+  }
+})();
+</script>
+</body>
+</html>
